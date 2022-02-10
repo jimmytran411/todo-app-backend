@@ -11,6 +11,7 @@ namespace TodoApp.Models
     [Table("Todo_item")]
     public partial class TodoItem
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public Guid Id { get; set; }
         [Required]

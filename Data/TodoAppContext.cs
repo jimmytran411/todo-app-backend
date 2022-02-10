@@ -1,8 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
-using TodoApp.Models;
+using System;
 
 #nullable disable
 
@@ -10,8 +9,8 @@ namespace TodoApp.Models
 {
     public partial class TodoAppContext : DbContext
     {
-         static TodoAppContext()
-        => NpgsqlConnection.GlobalTypeMapper.MapEnum<StatusTypes>();
+        static TodoAppContext()
+       => NpgsqlConnection.GlobalTypeMapper.MapEnum<StatusTypes>();
 
         public TodoAppContext()
         {
@@ -29,7 +28,11 @@ namespace TodoApp.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseNpgsql("Name=ConnectionStrings:PostgresConnection");
+                 IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                 optionsBuilder.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));
             }
         }
 
@@ -56,6 +59,6 @@ namespace TodoApp.Models
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
-       
+
     }
 }

@@ -41,9 +41,11 @@ namespace TodoApp
 
             services.AddControllersWithViews();
 
-            // Add framework services.
+            // Db connection
             services.AddDbContext<TodoAppContext>(options =>
-            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection"));
+            });
 
             // Config JWT
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));

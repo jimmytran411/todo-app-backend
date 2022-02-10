@@ -17,6 +17,7 @@ namespace TodoApp.Models
         }
 
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public Guid Id { get; set; }
         [Required]
