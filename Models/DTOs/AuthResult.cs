@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ToDoApp.Configuration
+namespace TodoApp.Configuration
 {
    public class AuthResult
    {
