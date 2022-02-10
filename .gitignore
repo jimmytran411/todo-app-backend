@@ -1,3 +1,5 @@
 ﻿obj
 .vs/TodoApp/v16
 .vs
+bin
+appsettings.json
