@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -9,7 +11,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-
 using TodoApp.Configuration;
 using TodoApp.Models;
 using TodoApp.Models.DTOs;
@@ -36,100 +37,149 @@ namespace TodoApp.Controllers
         [Route("Register")]
         public async Task<IActionResult> RegisterSync([FromBody] RegistrationDTO user)
         {
-            if (ModelState.IsValid)
-            {
-                var existingUser = _context.Users.FirstOrDefault(dbUser => dbUser.Email == user.Email);
 
-                if (existingUser != null)
+            var existingUser = _context.Users.FirstOrDefault(dbUser => dbUser.Email == user.Email);
+
+            if (existingUser != null)
+            {
+                return BadRequest(new ResponseResult<string>()
                 {
-                    return BadRequest(new AuthResult()
-                    {
-                        Errors = new List<string>()
+                    Errors = new List<string>()
                         {
                             "Email already exists"
                         },
-                        Success = false
-                    }
-                    );
+                    Success = false
                 }
-
-                var newUser = new ApplicationUser()
-                {
-                    Email = user.Email,
-                    UserName = user.Email
-                };
-                var createdUser = await _userManager.CreateAsync(newUser, user.Password);
-
-                if (createdUser != null)
-                {
-                    await _context.SaveChangesAsync();
-
-                    return Ok(new AuthResult()
-                    {
-                        Success = true,
-
-                    });
-                }
-                else
-                {
-                    return BadRequest(new AuthResult()
-                    {
-                        Errors = { "Internal Server Errors" },
-                        Success = false
-                    });
-                }
-
+                );
             }
 
-            return BadRequest(new AuthResult()
+            var newUser = new ApplicationUser()
             {
-                Errors = new List<string>()
+                Email = user.Email,
+                UserName = user.Email
+            };
+            var createdUser = await _userManager.CreateAsync(newUser, user.Password);
+
+            if (createdUser != null)
+            {
+                await _context.SaveChangesAsync();
+
+                return Ok(new ResponseResult<string>()
                 {
-                    "Invalid Email or Password"
-                },
-                Success = false
-            });
+                    Success = true,
+
+                });
+            }
+            else
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Errors = { "Internal Server Errors" },
+                    Success = false
+                });
+            }
         }
 
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> LoginSync([FromBody] LoginDTO user)
         {
-            {
-                var existingUser = await _userManager.FindByEmailAsync(user.Email);
 
-                if (existingUser == null)
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+
+            if (existingUser == null)
+            {
+                return BadRequest(new ResponseResult<string>()
                 {
-                    return BadRequest(new AuthResult()
-                    {
-                        Errors = new List<string>() {
+                    Errors = new List<string>() {
                                 "Invalid Email"
                             },
-                        Success = false
-                    });
-                }
-
-                var isCorrect = await _userManager.CheckPasswordAsync(existingUser, user.Password);
-
-                if (!isCorrect)
-                {
-                    return BadRequest(new AuthResult()
-                    {
-                        Errors = new List<string>() {
-                                "Invalid Password"
-                            },
-                        Success = false
-                    });
-                }
-
-                var jwtToken = GenerateJwtToken(existingUser);
-
-                return Ok(new AuthResult()
-                {
-                    Success = true,
-                    Token = jwtToken
+                    Success = false
                 });
             }
+
+            var isCorrect = await _userManager.CheckPasswordAsync(existingUser, user.Password);
+
+            if (!isCorrect)
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Errors = new List<string>() {
+                                "Invalid Password"
+                            },
+                    Success = false
+                });
+            }
+
+            var jwtToken = GenerateJwtToken(existingUser);
+
+            return Ok(new ResponseResult<string>()
+            {
+                Success = true,
+                Payload = jwtToken
+            });
+
+        }
+
+        [HttpPut]
+        [Route("updatePassword")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> ChangePasswordSync(UpdatePasswordDTO usermodel)
+        {
+            var userId = User.FindFirstValue("Id");
+            if (userId == null)
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Success = false,
+                    Errors = new List<string>()
+                    {
+                                "Id not found"
+                    }
+                });
+            }
+
+            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Success = false,
+                    Errors = new List<string>() {
+                                "User not found"
+                            }
+                });
+            }
+
+            var isSimilar = await _userManager.CheckPasswordAsync(user, usermodel.NewPassword);
+            if (isSimilar)
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Success = false,
+                    Errors = new List<string>() {
+                                "New password should not be the same as the previous one."
+                            }
+                });
+            }
+
+            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, usermodel.NewPassword);
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Success = false,
+                    Errors = new List<string>() {
+                                "Internal server error"
+                            }
+                });
+            }
+            return Ok(new ResponseResult<string>()
+            {
+                Success = true,
+
+            });
         }
 
         private string GenerateJwtToken(IdentityUser user)
