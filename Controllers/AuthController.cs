@@ -103,7 +103,7 @@ namespace TodoApp.Controllers
                     return BadRequest(new AuthResult()
                     {
                         Errors = new List<string>() {
-                                "Invalid login request"
+                                "Invalid Email"
                             },
                         Success = false
                     });
@@ -116,7 +116,7 @@ namespace TodoApp.Controllers
                     return BadRequest(new AuthResult()
                     {
                         Errors = new List<string>() {
-                                "Invalid login request"
+                                "Invalid Password"
                             },
                         Success = false
                     });
