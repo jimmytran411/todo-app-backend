@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using System.Text;
-using Todo.Configuration;
+using TodoApp.Configuration;
 using TodoApp.Models;
 
 namespace TodoApp
@@ -70,7 +70,7 @@ namespace TodoApp
             });
 
             // Config Default Identity
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<TodoAppContext>();
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<TodoAppContext>();
 
 
             services.AddControllers();
@@ -96,7 +96,7 @@ namespace TodoApp
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
