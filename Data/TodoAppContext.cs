@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using System;
@@ -7,14 +8,10 @@ using System;
 
 namespace TodoApp.Models
 {
-    public partial class TodoAppContext : DbContext
+    public partial class TodoAppContext : IdentityDbContext<ApplicationUser>
     {
         static TodoAppContext()
        => NpgsqlConnection.GlobalTypeMapper.MapEnum<StatusTypes>();
-
-        public TodoAppContext()
-        {
-        }
 
         public TodoAppContext(DbContextOptions<TodoAppContext> options)
             : base(options)
@@ -22,7 +19,6 @@ namespace TodoApp.Models
         }
 
         public virtual DbSet<TodoItem> TodoItems { get; set; }
-        public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -44,18 +40,19 @@ namespace TodoApp.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.HasOne(d => d.User)
+                entity.HasOne(d => d.ApplicationUser)
                     .WithMany(p => p.TodoItems)
                     .HasForeignKey(d => d.UserId)
                     .HasConstraintName("User_id");
             });
 
-            modelBuilder.Entity<User>(entity =>
+            modelBuilder.Entity<ApplicationUser>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
             OnModelCreatingPartial(modelBuilder);
+            base.OnModelCreating(modelBuilder);
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
