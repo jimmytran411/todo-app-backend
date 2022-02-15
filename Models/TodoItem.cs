@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
@@ -11,6 +9,7 @@ namespace TodoApp.Models
     [Table("Todo_item")]
     public partial class TodoItem
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public Guid Id { get; set; }
         [Required]
@@ -23,11 +22,11 @@ namespace TodoApp.Models
         [Column("Status")]
         public StatusTypes Status { get; set; }
         [Column("User_Id")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty("TodoItems")]
-        public virtual User User { get; set; }
+        public virtual ApplicationUser ApplicationUser { get; set; }
     }
     public enum StatusTypes
     {

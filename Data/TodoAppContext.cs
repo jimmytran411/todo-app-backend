@@ -1,21 +1,17 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
-using TodoApp.Models;
+using System;
 
 #nullable disable
 
 namespace TodoApp.Models
 {
-    public partial class TodoAppContext : DbContext
+    public partial class TodoAppContext : IdentityDbContext<ApplicationUser>
     {
-         static TodoAppContext()
-        => NpgsqlConnection.GlobalTypeMapper.MapEnum<StatusTypes>();
-
-        public TodoAppContext()
-        {
-        }
+        static TodoAppContext()
+       => NpgsqlConnection.GlobalTypeMapper.MapEnum<StatusTypes>();
 
         public TodoAppContext(DbContextOptions<TodoAppContext> options)
             : base(options)
@@ -23,13 +19,16 @@ namespace TodoApp.Models
         }
 
         public virtual DbSet<TodoItem> TodoItems { get; set; }
-        public virtual DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseNpgsql("Name=ConnectionStrings:PostgresConnection");
+                 IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                 optionsBuilder.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));
             }
         }
 
@@ -41,21 +40,22 @@ namespace TodoApp.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.HasOne(d => d.User)
+                entity.HasOne(d => d.ApplicationUser)
                     .WithMany(p => p.TodoItems)
                     .HasForeignKey(d => d.UserId)
                     .HasConstraintName("User_id");
             });
 
-            modelBuilder.Entity<User>(entity =>
+            modelBuilder.Entity<ApplicationUser>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
             OnModelCreatingPartial(modelBuilder);
+            base.OnModelCreating(modelBuilder);
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
-       
+
     }
 }
