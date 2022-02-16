@@ -45,9 +45,27 @@ namespace TodoApp.Controllers
 
         // GET api/<TodoController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public IActionResult GetTodoById(Guid id)
         {
-            return "value";
+            var userId = User.FindFirstValue("Id");
+            var todo = _todoAppContext.TodoItems
+                .Where(item => item.UserId == userId)
+                .Where(item => item.Id == id).FirstOrDefault();
+
+            if (todo == null)
+            {
+                return BadRequest(new ResponseResult<string>() 
+                { 
+                    Success = false,
+                    Errors = new List<string> { "Item not found"}
+                });
+            }
+
+            return Ok(new ResponseResult<TodoItem>()
+            {
+                Success = true,
+                Payload = todo
+            });
         }
 
         // POST api/<TodoController>
