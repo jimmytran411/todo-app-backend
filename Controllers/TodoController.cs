@@ -40,24 +40,22 @@ namespace TodoApp.Controllers
             {
                 Success = true,
                 Payload = todoList
-            }) ;
+            });
         }
 
-        // GET api/<TodoController>/5
+        // GET api/<TodoController>/:id
         [HttpGet("{id}")]
         public IActionResult GetTodoById(Guid id)
         {
-            var userId = User.FindFirstValue("Id");
             var todo = _todoAppContext.TodoItems
-                .Where(item => item.UserId == userId)
                 .Where(item => item.Id == id).FirstOrDefault();
 
             if (todo == null)
             {
-                return BadRequest(new ResponseResult<string>() 
-                { 
+                return BadRequest(new ResponseResult<string>()
+                {
                     Success = false,
-                    Errors = new List<string> { "Item not found"}
+                    Errors = new List<string> { "Item not found" }
                 });
             }
 
@@ -101,13 +99,38 @@ namespace TodoApp.Controllers
             return Ok(new ResponseResult<string>() { Success = true });
         }
 
-        // PUT api/<TodoController>/5
+        // PUT api/<TodoController>/:id
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> UpdateTodo(Guid id, [FromBody] UpdateTodoDTO updateField)
         {
+            var todo = _todoAppContext.TodoItems.Where(item => item.Id == id).FirstOrDefault();
+            if (todo == null)
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Success = false,
+                    Errors = new List<string> { "Item not found" }
+                });
+            }
+
+
+            if (updateField.Name != null) todo.Name = updateField.Name;
+            if (updateField.Description != null) todo.Description = updateField.Description;
+            if (updateField.Status != null)
+            {
+                _ = Enum.TryParse(updateField.Status, out StatusTypes statusTypes);
+                todo.Status = statusTypes;
+            }
+            todo.UpdatedAt = DateTime.Now;
+            await _todoAppContext.SaveChangesAsync();
+
+            return Ok(new ResponseResult<string>() 
+            {
+                Success = true
+            });
         }
 
-        // DELETE api/<TodoController>/5
+        // DELETE api/<TodoController>/:id
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
