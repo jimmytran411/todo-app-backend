@@ -132,8 +132,25 @@ namespace TodoApp.Controllers
 
         // DELETE api/<TodoController>/:id
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> DeleteTodoSync(Guid id)
         {
+           var todo =  _todoAppContext.TodoItems.Where(item => item.Id == id).FirstOrDefault();
+            if (todo == null)
+            {
+                return BadRequest(new ResponseResult<string>()
+                {
+                    Success = false,
+                    Errors = new List<string> { "Item not found" }
+                });
+            }
+
+            _todoAppContext.TodoItems.Remove(todo);
+            await _todoAppContext.SaveChangesAsync();
+
+            return Ok(new ResponseResult<string>()
+            {
+                Success = true
+            });
         }
     }
 }
