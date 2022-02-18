@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TodoApp.Models.DTOs
+namespace TodoApp.Models.DTOs.Request
 {
-    public class LoginDTO
+    public class RegistrationDTO
     {
         [Required]
         [EmailAddress]
