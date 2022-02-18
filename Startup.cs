@@ -11,6 +11,7 @@ using Newtonsoft.Json.Serialization;
 using System.Text;
 using TodoApp.Configuration;
 using TodoApp.Models;
+using TodoApp.Services;
 
 namespace TodoApp
 {
@@ -42,7 +43,7 @@ namespace TodoApp
 
             // Db connection
             services.AddDbContext<TodoAppContext>(options =>
-            {
+            {          
                 options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection"));
             });
 
@@ -71,6 +72,8 @@ namespace TodoApp
             // Config Default Identity
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<TodoAppContext>();
 
+            // Config repository & corresponding Interface
+            services.AddTransient<ITodoItemRepository, TodoItemRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
