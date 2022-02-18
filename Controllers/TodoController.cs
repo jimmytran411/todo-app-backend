@@ -76,7 +76,7 @@ namespace TodoApp.Controllers
 
       // POST api/<TodoController>
       [HttpPost]
-      public async Task<IActionResult> CreateTodo([FromBody] CreateTodoDTO todo)
+      public async Task<IActionResult> CreateTodo([FromBody] CreateTodoRequest todo)
       {
          var userId = User.FindFirstValue("Id");
          var newTodo = await itemRespository.CreateTodoAsync(todo, userId);
@@ -86,7 +86,7 @@ namespace TodoApp.Controllers
 
       // PUT api/<TodoController>/:id
       [HttpPut("{id}")]
-      public async Task<IActionResult> UpdateTodo(Guid id, [FromBody] UpdateTodoDTO updateField)
+      public async Task<IActionResult> UpdateTodo(Guid id, [FromBody] UpdateTodoRequest updateField)
       {
          var userId = User.FindFirstValue("Id");
          var todo = _todoAppContext.TodoItems.Where(item => item.UserId == userId).Where(item => item.Id == id).FirstOrDefault();

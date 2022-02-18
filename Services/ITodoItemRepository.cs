@@ -12,8 +12,8 @@ namespace TodoApp.Services
       List<TodoItem> GetTodos(string userId);
       List<TodoItem> GetTodosWithStatus(string userId, StatusTypes status);
       TodoItem GetTodoById(Guid id);
-      Task<TodoItemDTO> CreateTodoAsync(CreateTodoDTO todo, string userId);
-      Task<TodoItemDTO> UpdateTodoAsync(UpdateTodoDTO updateField, TodoItem todo);
+      Task<TodoItemDTO> CreateTodoAsync(CreateTodoRequest todo, string userId);
+      Task<TodoItemDTO> UpdateTodoAsync(UpdateTodoRequest updateField, TodoItem todo);
       Task<TodoItemDTO> DeleteTodoAsync(TodoItem todo);
    }
 }

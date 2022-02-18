@@ -34,7 +34,7 @@ namespace TodoApp.Services
          return todoAppContext.TodoItems.Where(t => t.Id == id).FirstOrDefault();
       }
 
-      public async Task<TodoItemDTO> CreateTodoAsync(CreateTodoDTO todo, string userId)
+      public async Task<TodoItemDTO> CreateTodoAsync(CreateTodoRequest todo, string userId)
       {
          var newTodo = (await todoAppContext.TodoItems.AddAsync(new TodoItem()
          {
@@ -52,7 +52,7 @@ namespace TodoApp.Services
          return newTodo.AsTodoItemDTO();
       }
 
-      public async Task<TodoItemDTO> UpdateTodoAsync(UpdateTodoDTO updateField, TodoItem todo)
+      public async Task<TodoItemDTO> UpdateTodoAsync(UpdateTodoRequest updateField, TodoItem todo)
       {
 
          if (updateField.Name != null) todo.Name = updateField.Name;
