@@ -13,7 +13,8 @@ using System.Text;
 using System.Threading.Tasks;
 using TodoApp.Configuration;
 using TodoApp.Models;
-using TodoApp.Models.DTOs;
+using TodoApp.Models.DTOs.Request;
+using TodoApp.Models.DTOs.Response;
 
 namespace TodoApp.Controllers
 {
@@ -60,7 +61,7 @@ namespace TodoApp.Controllers
             };
             var createdUser = await _userManager.CreateAsync(newUser, user.Password);
 
-            if (createdUser != null)
+            if (createdUser.Succeeded)
             {
                 await _context.SaveChangesAsync();
 
@@ -72,9 +73,9 @@ namespace TodoApp.Controllers
             }
             else
             {
-                return BadRequest(new ResponseResult<string>()
+                return BadRequest(new ResponseResult<List<IdentityError>>()
                 {
-                    Errors = { "Internal Server Errors" },
+                    Payload = createdUser.Errors.ToList(),
                     Success = false
                 });
             }
