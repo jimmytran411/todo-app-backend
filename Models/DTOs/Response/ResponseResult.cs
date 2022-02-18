@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TodoApp.Models.DTOs
+namespace TodoApp.Models.DTOs.Response
 {
    public class ResponseResult<T>
    {
